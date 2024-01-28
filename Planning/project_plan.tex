@@ -1,0 +1,93 @@
+\documentclass[11pt,a4paper]{article}
+\pagenumbering{gobble}
+
+\input{content/preambel}
+
+\begin{document}
+	
+	\begin{LARGE}
+		\textbf{CS50 - Final Project - Music db}
+	\end{LARGE}
+	
+	\vspace{1cm}
+		
+	\begin{figure}[h]
+		
+		\definecolor{tableLineOne}{RGB}{235,235,235}
+		\definecolor{GanttEvenLines}{RGB}{210,210,210}
+		\definecolor{GanttOddLines}{RGB}{252,252,252}
+		
+		\tikzset{
+			oddlines/.style={
+				line width=\ganttvalueof{y unit chart},
+				yshift=-0.5*\ganttvalueof{y unit chart},
+				opacity=0.2,
+				GanttOddLines
+			},
+			evenlines/.style={
+				oddlines,
+				GanttEvenLines
+			}
+		}
+		
+		\begin{ganttchart}[
+			hgrid = {*1{oddlines},*1{evenlines}},
+			canvas/.style=%
+			{fill=tableLineOne,
+			},
+			title/.style={fill=red1, draw=none},
+			%			title label font=\color{white},
+			bar/.append style={fill=red1},
+			x unit=3mm,
+			time slot format=isodate,
+			%			milestone right shift=5,
+			%			group right peak width=5,
+			%			group left peak width=5,
+			y unit title=0.7cm,
+			y unit chart=0.6cm,
+			milestone label font=\tiny,
+			group label font=\tiny,
+			title label font=\tiny\color{white}\bfseries,
+			bar label font=\tiny,
+			bar label node/.style={text width=5.5cm,align=right,font=\scriptsize\RaggedLeft,anchor=east},
+			milestone label node/.style={text width=5.5cm,align=right,font=\scriptsize\RaggedLeft,anchor=east},
+			group label node/.style={text width=5.5cm,align=right,font=\scriptsize\RaggedLeft\bfseries,anchor=east},
+			]{2024-01-25}{2024-02-28}
+			\gantttitlecalendar{year, month=name,week} \\
+		
+			\ganttgroup{Research}{2024-01-29}{2024-02-02}\\
+			\ganttbar{SQL Alchemy}{2024-01-29}{2024-01-29}\\
+			\ganttlinkedbar{SQLite3 or Postgres}{2024-01-29}{2024-01-30}\\
+			\ganttbar{Hosting options}{2024-01-29}{2024-01-29}\\
+			\ganttbar{MusicBrainzAPI}{2024-01-31}{2024-02-02}\\
+			\ganttlinkedmilestone{Ready for Prototypes}{2024-02-02}\\
+			
+			\ganttgroup{Protoypes}{2024-02-03}{2024-02-11}\\
+			\ganttbar{flask App to search for music}{2024-02-03}{2024-02-06}\\
+			\ganttlinkedbar{Backend: Modeling of music db}{2024-02-07}{2024-02-08}\\
+			\ganttlinkedbar{Frontend: Displaying Data from db}{2024-02-09}{2024-02-11}\\
+			\ganttlinkedmilestone{Ready for Implementation}{2024-02-11}\\
+			
+			\ganttgroup{Implementation}{2024-02-12}{2024-02-23}\\
+			\ganttbar{Frontend: Create layout}{2024-02-12}{2024-02-13}\\
+			\ganttlinkedbar{Music search}{2024-02-14}{2024-02-15}\\
+			\ganttlinkedbar{Add to music db function}{2024-02-16}{2024-02-19}\\
+			\ganttlinkedbar{Display of music on site}{2024-02-20}{2024-02-21}\\
+			\ganttlinkedbar{Testing and Bugfixing}{2024-02-22}{2024-02-23}\\
+			
+			\ganttgroup{Submission of project}{2024-02-24}{2024-02-25}\\
+			\ganttbar{Video}{2024-02-24}{2024-02-25}\\
+			\ganttbar{README}{2024-02-25}{2024-02-25}\\
+			\ganttlinkedmilestone{Submit50}{2024-02-25}\\
+			
+			\ganttlink{elem2}{elem5}
+			\ganttlink[link mid =.2]{elem3}{elem5}
+			\ganttlink[link mid =.25]{elem5}{elem7}
+			\ganttlink[link mid =.25]{elem10}{elem12}
+			\ganttlink[link mid =.25]{elem16}{elem18}
+			\ganttlink[link mid =.25]{elem18}{elem20}
+		\end{ganttchart}
+	\end{figure}
+
+
+\end{document}
