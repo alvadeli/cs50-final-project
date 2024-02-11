@@ -1,8 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.types import DateTime, Integer, String
-from datetime import datetime
+from sqlalchemy.types import Integer, String,Date
+from datetime import date
 from flask_migrate import Migrate
 
 db = SQLAlchemy()
@@ -14,7 +14,7 @@ class Artist(db.Model):
 class Album(db.Model):
     id: Mapped[int] = mapped_column(Integer(), primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    release_date: Mapped[datetime] = mapped_column(DateTime(), nullable=False) 
+    release_date: Mapped[date] = mapped_column(Date(), nullable=False) 
     cover: Mapped[str] = mapped_column(String(255), nullable=True)
     artist_id: Mapped[int] = mapped_column(ForeignKey("artist.id"), nullable=False)
 
