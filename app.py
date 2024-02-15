@@ -34,15 +34,14 @@ def after_request(response):
 
 @app.route("/", methods=["POST", "GET"])
 def index():
-    stmt = select(Album,Artist,Rating).join(Album, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
-    print(stmt)
-    album_data = db.session.execute(stmt).all()
+    select_album_data = select(Album,Artist,Rating).join(Album, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+    album_data = db.session.execute(select_album_data).all()
 
-    for album,artist,rating in album_data:
-        rating_value = rating.rating_value if rating else ""
-        print(f"{album.id} {album.title} {artist.name} {rating_value}")
+    # for album,artist,rating in album_data:
+    #     rating_value = rating.rating_value if rating else ""
+    #     print(f"{album.id} {album.title} {artist.name} {rating_value}")
 
-    return render_template("index.html")
+    return render_template("index.html", album_data=album_data)
 
 
 @app.route("/enter_music_data", methods=["POST", "GET"])
@@ -60,33 +59,47 @@ def enter_music_data():
     #     render_template("enter_music_data.html")
 
     release_date = datetime.strptime(release_date, "%Y-%m-%d").date()
-    
-    artist = db.session.scalars(select(Artist)
-                                   .where(Artist.name == artist_name)
-                                   ).first()
+    select_artist = select(Artist).where(Artist.name == artist_name)
+    artist = db.session.scalars(select_artist).first()
     
     if not artist:
-        new_artist = Artist(name=artist_name)
-        db.session.add(new_artist)
+        artist = Artist(name=artist_name)
+        db.session.add(artist)
         db.session.commit()
-        artist = new_artist
                
-    album = db.session.scalars(select(Album)
-                                  .where(Album.title == album_title)
-                                  .where(Album.artist_id == artist.id)
-                                  ).first()
+    select_album = select(Album).where(Album.title == album_title).where(Album.artist_id == artist.id)           
+    album = db.session.scalars(select_album).first()
     
     if album:
-        return
-    
-    new_album = Album(title = album_title, release_date = release_date, artist_id = artist.id)
-    db.session.add(new_album)
+        album.release_date = release_date
+    else:
+        album = Album(title = album_title, release_date = release_date, artist_id = artist.id)
+        db.session.add(album)
     db.session.commit()
-    album = new_album
-
+ 
     if rating_value:
-        new_rating = Rating(album_id = album.id, rating_value = rating_value)
-        db.session.add(new_rating)
-        db.session.commit()
+        select_rating = select(Rating).where(Rating.album_id == album.id)
+        rating = db.session.scalars(select_rating).first()
+        if rating:
+            rating.rating_value = rating_value
+        else:
+            new_rating = Rating(album_id = album.id, rating_value = rating_value)
+            db.session.add(new_rating)
+        db.session.commit()    
 
-    return render_template("enter_music_data.html")
+    return render_template("index.html")
+
+
+@app.route("/edit_music_data", methods=["POST"])
+def edit_music_data():
+    data = request.get_json()
+    album_id = data.get('albumId')
+
+    # Now you can use the album ID as needed in your Flask route logic
+    # For example, you can perform database operations or other tasks with this ID
+
+    # Example: Print the album ID to the console
+    print("Received album ID:", album_id)
+    #TODO edit html album with id ... Update Album data create new artist if new, update rating with id
+    return jsonify({'message': 'Album ID received successfully'})
+    

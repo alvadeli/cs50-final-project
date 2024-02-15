@@ -20,6 +20,6 @@ class Album(db.Model):
 
 class Rating(db.Model):
     id: Mapped[int] = mapped_column(Integer(), primary_key=True)
-    album_id: Mapped[int] = mapped_column(ForeignKey("album.id"), nullable=False)
+    album_id: Mapped[int] = mapped_column(ForeignKey("album.id"), nullable=False, unique=True)
     rating_value: Mapped[int] = mapped_column(Integer(), nullable=False)
 
