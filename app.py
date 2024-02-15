@@ -34,7 +34,7 @@ def after_request(response):
 
 @app.route("/", methods=["POST", "GET"])
 def index():
-    select_album_data = select(Album,Artist,Rating).join(Album, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+    select_album_data = select(Album,Artist,Rating).join(Artist, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
     album_data = db.session.execute(select_album_data).all()
 
     # for album,artist,rating in album_data:
@@ -87,19 +87,29 @@ def enter_music_data():
             db.session.add(new_rating)
         db.session.commit()    
 
-    return render_template("index.html")
-
-
-@app.route("/edit_music_data", methods=["POST"])
-def edit_music_data():
-    data = request.get_json()
-    album_id = data.get('albumId')
-
-    # Now you can use the album ID as needed in your Flask route logic
-    # For example, you can perform database operations or other tasks with this ID
-
-    # Example: Print the album ID to the console
-    print("Received album ID:", album_id)
-    #TODO edit html album with id ... Update Album data create new artist if new, update rating with id
-    return jsonify({'message': 'Album ID received successfully'})
+    return redirect("/")
     
+@app.route("/edit_music_data", methods=["GET", "POST"])
+def edit_music_data():
+    if request.method == "GET":
+        album_id = request.args.get("album_id")
+        if not album_id:
+            redirect("/")
+        try:
+            album_id = int(album_id)
+        except:
+            return redirect("/")    
+        
+        select_album_data = select(Album,Artist,Rating).filter(Album.id == album_id).join(Album, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+        album_data = db.session.execute(select_album_data).first()
+
+        if not album_data:
+            return redirect("/")
+
+        return render_template("edit_music_data.html", album_data = album_data)
+    
+    #TODO Update Album data,
+
+    #Delecte Add new Artist if neccessary and delete artist with no refs
+
+    return redirect("/")

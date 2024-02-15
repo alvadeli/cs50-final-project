@@ -5,34 +5,6 @@
 {% endblock %}
 
 {% block main %}
-    <script>
-        function rowClicked(row) {
-            var albumId = row.getAttribute('data-album-id');
-            var data = JSON.stringify({ albumId: albumId });
-
-            fetch('/edit_music_data', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: data,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Data sent successfully', data);
-            })
-            .catch(error => {
-                console.error('There was a problem with your fetch operation:', error);
-            });
-    }
-
-    </script>
-
     <div class="col-4 mx-auto">
         <table class="table table-striped table-hover">
             <thead>
@@ -41,15 +13,22 @@
                 <th scope="col">Artist</th>
                 <th scope="col">Rating</th>
                 <th scope="col">Release</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
                 {% for album,artist,rating in album_data %}
-                <tr data-album-id="{{ album.id }}" ondblclick="rowClicked(this)">
+                <tr>    
                     <td> {{ album.title }} </td>
                     <td> {{ artist.name }} </td>
                     <td on> {{ '%-2s \u2B50' % rating.rating_value if rating else ""  }} </td>
                     <td> {{ album.release_date }} </td>
+                    <td>
+                        <form method="get" action="/edit_music_data"> 
+                            <input type="hidden" name="album_id" value="{{ album.id }}">
+                            <button type="submit">Edit</button>
+                        </form>
+                    </td>
                   </tr>
                 {% endfor %}
             </tbody>
