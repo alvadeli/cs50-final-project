@@ -3,7 +3,6 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Integer, String,Date
 from datetime import date
-from flask_migrate import Migrate
 
 db = SQLAlchemy()
 

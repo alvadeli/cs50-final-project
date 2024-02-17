@@ -1,9 +1,8 @@
 import os
 
-from flask import Flask, flash, jsonify, redirect, render_template, request, session
+from flask import Flask, flash, jsonify, redirect, render_template, request, session, abort
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import select
-#from flask_migrate import Migrate
+import sqlalchemy as sqla
 from datetime import datetime
 from models import Artist, Album, Rating, db
 
@@ -12,10 +11,7 @@ app = Flask(__name__)
 
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///music.db" 
-#db = SQLAlchemy(app)
 db.init_app(app)
-# migrate = Migrate(app, db)
-
 
 with app.app_context():    
     db.create_all()
@@ -34,7 +30,7 @@ def after_request(response):
 
 @app.route("/", methods=["POST", "GET"])
 def index():
-    select_album_data = select(Album,Artist,Rating).join(Artist, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+    select_album_data = sqla.select(Album,Artist,Rating).join(Artist, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
     album_data = db.session.execute(select_album_data).all()
 
     # for album,artist,rating in album_data:
@@ -49,25 +45,32 @@ def enter_music_data():
     if request.method == "GET":
         return render_template("enter_music_data.html")
     
+    ## POST
+
+    # Get Data from Form
     artist_name = request.form.get("artist")
     album_title = request.form.get("album")
     release_date = request.form.get("release_date")
     rating_value = request.form.get("rating")
 
-    # if not artist or album or release_date:
-    #     # TODO Error Handling
-    #     render_template("enter_music_data.html")
-
+    if not artist_name or not album_title or not release_date:
+        return abort(400, "Missing required fields")
+    
+    album_title = album_title.strip()
+    artist_name = artist_name.strip()
     release_date = datetime.strptime(release_date, "%Y-%m-%d").date()
-    select_artist = select(Artist).where(Artist.name == artist_name)
+
+    # add artist
+    select_artist = sqla.select(Artist).where(Artist.name == artist_name)
     artist = db.session.scalars(select_artist).first()
     
     if not artist:
         artist = Artist(name=artist_name)
         db.session.add(artist)
         db.session.commit()
-               
-    select_album = select(Album).where(Album.title == album_title).where(Album.artist_id == artist.id)           
+
+    # add or update Album
+    select_album = sqla.select(Album).where(Album.title == album_title).where(Album.artist_id == artist.id)           
     album = db.session.scalars(select_album).first()
     
     if album:
@@ -77,8 +80,13 @@ def enter_music_data():
         db.session.add(album)
     db.session.commit()
  
+    # add rating for album
     if rating_value:
-        select_rating = select(Rating).where(Rating.album_id == album.id)
+        try:
+            rating_value = int(rating_value)
+        except:
+            return abort(400, f"rating_value {rating_value} could not be processed")    
+        select_rating = sqla.select(Rating).where(Rating.album_id == album.id)
         rating = db.session.scalars(select_rating).first()
         if rating:
             rating.rating_value = rating_value
@@ -94,13 +102,13 @@ def edit_music_data():
     if request.method == "GET":
         album_id = request.args.get("album_id")
         if not album_id:
-            redirect("/")
+            return abort(400, "album_id missing")
         try:
             album_id = int(album_id)
         except:
-            return redirect("/")    
+            return abort(400, f"album_id {album_id} could not be processed")    
         
-        select_album_data = select(Album,Artist,Rating).filter(Album.id == album_id).join(Album, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+        select_album_data = sqla.select(Album,Artist,Rating).filter(Album.id == album_id).join(Album, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
         album_data = db.session.execute(select_album_data).first()
 
         if not album_data:
@@ -108,8 +116,70 @@ def edit_music_data():
 
         return render_template("edit_music_data.html", album_data = album_data)
     
-    #TODO Update Album data,
+    ## POST 
 
-    #Delecte Add new Artist if neccessary and delete artist with no refs
+    # Get input data
+    album_id = request.form.get("album_id")
+    artist_name = request.form.get("artist")
+    album_title = request.form.get("album")
+    release_date = request.form.get("release_date")
+    rating_value = request.form.get("rating")
 
+    if not album_id or not artist_name or not album_title or not release_date:
+        return abort(400, "Missing required fields")
+    
+    album_title = album_title.strip()
+    artist_name = artist_name.strip()
+    release_date = datetime.strptime(release_date, "%Y-%m-%d").date()
+
+    try:
+        album_id = int(album_id)
+    except:
+        return abort(400, f"album_id {album_id} could not be processed")    
+
+    select_album_data = sqla.select(Album,Artist,Rating).filter(Album.id == album_id).join(Album, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+    album_data = db.session.execute(select_album_data).first()
+
+    if album_data is None:
+        abort(400, f"Album with id {album_id} not found")
+
+    album, artist, rating = album_data.t;   
+    album.title = album_title
+    album.release_date = release_date
+    artist.name = artist_name
+
+    if rating_value:
+        try:
+            rating_value = int(rating_value)
+        except:
+            return abort(400, f"rating_value {rating_value} could not be processed")    
+        if rating:
+            rating.rating_value = rating_value
+        else:
+            new_rating = Rating(album_id = album.id, rating_value = rating_value)
+            db.session.add(new_rating)
+    
+    db.session.commit()
+    return redirect("/")
+
+
+@app.route("/delete", methods=["POST"])
+def delete():
+    album_id = request.form.get("album_id")
+
+    if not album_id:
+        return abort(400, "album_id not found")
+    
+    try:
+        album_id = int(album_id)
+    except:
+        return abort(400, f"album_id {album_id} could not be processed")   
+
+    delete_rating = sqla.delete(Rating).where(Rating.album_id == album_id)
+    db.session.execute(delete_rating)
+    
+    delete_album = sqla.delete(Album).where(Album.id == album_id)
+    db.session.execute(delete_album)
+
+    db.session.commit()
     return redirect("/")

@@ -21,12 +21,16 @@
                 <tr>    
                     <td> {{ album.title }} </td>
                     <td> {{ artist.name }} </td>
-                    <td on> {{ '%-2s \u2B50' % rating.rating_value if rating else ""  }} </td>
+                    <td> {{ '%-2s \u2B50' % rating.rating_value if rating else ""  }} </td>
                     <td> {{ album.release_date }} </td>
                     <td>
-                        <form method="get" action="/edit_music_data"> 
+                        <form method="get" action="/edit_music_data" style="display: inline;"> 
                             <input type="hidden" name="album_id" value="{{ album.id }}">
                             <button type="submit">Edit</button>
+                        </form>
+                        <form method="post" action="/delete" style="display: inline;">
+                            <input type="hidden" name="album_id" value="{{ album.id }}">
+                            <button type="submit">Delete</button>
                         </form>
                     </td>
                   </tr>
