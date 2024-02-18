@@ -10,30 +10,27 @@
 </head>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-        <a class="navbar-brand" href="#">MusicDB</a>
+        <a class="navbar-brand" href="/">MusicDB</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" href="/">Home</a>
-            </li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Add Music
                 </a>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/enter_music_data">Enter data</a></li>
                     <li><a class="dropdown-item " href="/search_musicbrainz_data">Search MusicBrainz</a></li>
+                    <li><a class="dropdown-item" href="/enter_music_data">Enter data</a></li>
                 </ul>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/edit">Edit</a>
             </li>
-            <li class="nav-item">
+            <!-- <li class="nav-item">
                 <a class="nav-link" href="/img_test">Img test</a>
-            </li>
+            </li> -->
             </ul>
         </div>
         </div>
@@ -42,6 +39,5 @@
     <main>
         {% block main %}{% endblock %}
     </main>
-   
   </body>
 </html>
