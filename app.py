@@ -6,6 +6,7 @@ import requests
 import sqlalchemy as sqla
 from datetime import datetime
 from models import Artist, Album, Rating, db
+from musicbrainz_functions import fetch_musicbrainz_data
 
 # Configure application
 app = Flask(__name__)
@@ -88,7 +89,7 @@ def enter_music_data():
         if rating:
             rating.rating_value = rating_value
         else:
-            new_rating = Rating(album_id = album.id, rating_value = rating_value)
+            new_rating = Rating(album_id=album.id, rating_value=rating_value)
             db.session.add(new_rating)
         db.session.commit()    
 
@@ -104,26 +105,19 @@ def search_musicbrainz_data():
     album = request.form.get("album")
 
     if not artist or not album:
-            return abort(400, "Missing required fields")
+        return abort(400, "Missing required fields")
     
     query_params = {
         "release": album,
         "artist": artist     
     }
 
-    MUSICBRAINZ_API_URL = "https://musicbrainz.org/ws/2/release-group"
-    query = "".join([f" AND {key}:{value}" for key, value in query_params.items()])
-    url = f"{MUSICBRAINZ_API_URL}?query={query}&fmt=json"
+    release_groups = fetch_musicbrainz_data(query_params)
 
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        json_res = response.json()
-        #print(json_res)
-        return jsonify(json_res["release-groups"])
-    except requests.exceptions.RequestException as e:
-        return jsonify({"error": f"Failed to fetch data from MusicBrainz API. {str(e)}"}), 500
-
+    if release_groups is not None:
+        return render_template("search_musicbrainz_data.html", release_groups=release_groups, artist=artist, album=album, display_results=True)
+    
+    return abort({"error": "Failed to fetch data from MusicBrainz API."}), 500
 
 
 @app.route("/edit_music_data", methods=["GET", "POST"])
@@ -221,3 +215,9 @@ def edit():
     return render_template("index.html", album_data=album_data, show_actions=True)
 
 
+@app.route("/img_test", methods=["GET"])
+def img_test():
+    select_album_data = sqla.select(Album,Artist,Rating).join(Artist, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+    album_data = db.session.execute(select_album_data).all()
+
+    return render_template("img_test.html", album_data=album_data, show_actions=False)

@@ -5,10 +5,11 @@
 {% endblock %}
 
 {% block main %}
-    <div class="col-4 mx-auto">
+    <div class="col-5 mx-auto">
         <table class="table table-striped table-hover">
             <thead>
               <tr>
+                <th scope="col"></th>
                 <th scope="col">Album</th>
                 <th scope="col">Artist</th>
                 <th scope="col">Rating</th>
@@ -20,20 +21,21 @@
             </thead>
             <tbody>
                 {% for album,artist,rating in album_data %}
-                <tr>    
+                <tr>   
+                    <td> <img src="static/images/music_icon.png" width="100">  </td> 
                     <td> {{ album.title }} </td>
                     <td> {{ artist.name }} </td>
                     <td> {{ '%-2s \u2B50' % rating.rating_value if rating else ""  }} </td>
                     <td> {{ album.release_date }} </td>
                     {% if show_actions %}
                         <td>
-                            <form method="get" action="/edit_music_data" style="display: inline;"> 
+                            <form method="GET" action="/edit_music_data" style="display: inline;"> 
                                 <input type="hidden" name="album_id" value="{{ album.id }}">
-                                <button type="submit">Edit</button>
+                                <button type="submit" class="btn btn-primary">Edit</button>
                             </form>
-                            <form method="post" action="/delete" style="display: inline;">
+                            <form method="POST" action="/delete" style="display: inline;">
                                 <input type="hidden" name="album_id" value="{{ album.id }}">
-                                <button type="submit">Delete</button>
+                                <button type="submit" class="btn btn-primary">Delete</button>
                             </form>
                         </td>
                     {% endif %}

@@ -6,14 +6,15 @@
 
 {% block main %}
 <div class="col-4 mx-auto container">
-    <form action="/search_musicbrainz_data" method="post">
+  <div class="mb-3">
+    <form action="/search_musicbrainz_data" method="POST">
         <div class="mb-3">
           <label class="form-label">Artist Name</label>
-          <input type="text" class="form-control" name="artist" required>
+          <input type="text" class="form-control" name="artist" required value="{{ artist if album else ""}}">
         </div>
         <div class="mb-3">
           <label class="form-label">Album Title</label>
-          <input type="text" class="form-control" name="album">
+          <input type="text" class="form-control" name="album" required value="{{ album if album else ""}}">
         </div>
         <div class="mb-3" hidden>
           <label class="form-label">Release Date</label>
@@ -25,6 +26,24 @@
           </div>
         <button type="submit" class="btn btn-primary">Search</button>
       </form>
+    </div>
+      {% if display_results %}
+        <div class="mb-3" >
+          <h4> Select Release</Select></h4>
+          {% if release_groups %}  
+            <form action="/#" method="POST">
+                <select name="selected_release_group">
+                    {% for release_group in release_groups %}
+                        <option value="{{ release_group.id }}">{{ release_group["title"] }} - {{ release_group["first-release-date"] }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Add</button>
+            </form>
+          {% else %}
+            <div> No Albums found </div>
+          {% endif %}
+      </div>
+      {% endif %}
 </div>
 {% endblock %}
 
