@@ -2,15 +2,25 @@
 #### Video Demo:
 #### Description:
 
-##### layout.html
+A Flask web application that allows someone to keep track of and rate their favourite music albums.
+The user can add new albums, edit existing albums and delete albums.
+
+## templates
+
+### layout.html
 This file defines the basic layout for the website.
 It contains a navbar to quickly navigate through the website.
 All other html files will extend this file.
 
-##### enter_music_data.html
+### index.html
 
-##### index.html
+### enter_music_data.html
 
-##### models.py
+### edit_music_data.html
 
-##### app.py
+## py
+
+### app.py
+
+### models.py
+

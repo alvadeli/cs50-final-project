@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, abort
 from flask_sqlalchemy import SQLAlchemy
+import requests
 import sqlalchemy as sqla
 from datetime import datetime
 from models import Artist, Album, Rating, db
@@ -33,11 +34,7 @@ def index():
     select_album_data = sqla.select(Album,Artist,Rating).join(Artist, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
     album_data = db.session.execute(select_album_data).all()
 
-    # for album,artist,rating in album_data:
-    #     rating_value = rating.rating_value if rating else ""
-    #     print(f"{album.id} {album.title} {artist.name} {rating_value}")
-
-    return render_template("index.html", album_data=album_data)
+    return render_template("index.html", album_data=album_data, show_actions=False)
 
 
 @app.route("/enter_music_data", methods=["POST", "GET"])
@@ -97,6 +94,38 @@ def enter_music_data():
 
     return redirect("/")
     
+
+@app.route("/search_musicbrainz_data", methods=["POST", "GET"])
+def search_musicbrainz_data():
+    if request.method == "GET":
+        return render_template("search_musicbrainz_data.html")
+    
+    artist = request.form.get("artist")
+    album = request.form.get("album")
+
+    if not artist or not album:
+            return abort(400, "Missing required fields")
+    
+    query_params = {
+        "release": album,
+        "artist": artist     
+    }
+
+    MUSICBRAINZ_API_URL = "https://musicbrainz.org/ws/2/release-group"
+    query = "".join([f" AND {key}:{value}" for key, value in query_params.items()])
+    url = f"{MUSICBRAINZ_API_URL}?query={query}&fmt=json"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        json_res = response.json()
+        #print(json_res)
+        return jsonify(json_res["release-groups"])
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Failed to fetch data from MusicBrainz API. {str(e)}"}), 500
+
+
+
 @app.route("/edit_music_data", methods=["GET", "POST"])
 def edit_music_data():
     if request.method == "GET":
@@ -183,3 +212,12 @@ def delete():
 
     db.session.commit()
     return redirect("/")
+
+@app.route("/edit", methods=["GET"])
+def edit():
+    select_album_data = sqla.select(Album,Artist,Rating).join(Artist, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+    album_data = db.session.execute(select_album_data).all()
+
+    return render_template("index.html", album_data=album_data, show_actions=True)
+
+

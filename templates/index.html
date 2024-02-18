@@ -13,7 +13,9 @@
                 <th scope="col">Artist</th>
                 <th scope="col">Rating</th>
                 <th scope="col">Release</th>
-                <th scope="col">Actions</th>
+                {% if show_actions %}
+                    <th scope="col">Actions</th>
+                {% endif %}
               </tr>
             </thead>
             <tbody>
@@ -23,16 +25,18 @@
                     <td> {{ artist.name }} </td>
                     <td> {{ '%-2s \u2B50' % rating.rating_value if rating else ""  }} </td>
                     <td> {{ album.release_date }} </td>
-                    <td>
-                        <form method="get" action="/edit_music_data" style="display: inline;"> 
-                            <input type="hidden" name="album_id" value="{{ album.id }}">
-                            <button type="submit">Edit</button>
-                        </form>
-                        <form method="post" action="/delete" style="display: inline;">
-                            <input type="hidden" name="album_id" value="{{ album.id }}">
-                            <button type="submit">Delete</button>
-                        </form>
-                    </td>
+                    {% if show_actions %}
+                        <td>
+                            <form method="get" action="/edit_music_data" style="display: inline;"> 
+                                <input type="hidden" name="album_id" value="{{ album.id }}">
+                                <button type="submit">Edit</button>
+                            </form>
+                            <form method="post" action="/delete" style="display: inline;">
+                                <input type="hidden" name="album_id" value="{{ album.id }}">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </td>
+                    {% endif %}
                   </tr>
                 {% endfor %}
             </tbody>
