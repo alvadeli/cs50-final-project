@@ -1,10 +1,12 @@
 import requests
 
+MUSICBRAINZ_API_URL = "https://musicbrainz.org/ws/2"
+MUSICBRAINZ_RELEASE_GROUP = f"{MUSICBRAINZ_API_URL}/release-group"
+MUSICBRAINZ_RELEASE = f"{MUSICBRAINZ_API_URL}/release"
 
 def fetch_musicbrainz_data(query_params):
-    MUSICBRAINZ_API_URL = "https://musicbrainz.org/ws/2/release-group"
     query = "".join([f" AND {key}:{value}" for key, value in query_params.items()])
-    url = f"{MUSICBRAINZ_API_URL}?query={query}&fmt=json"
+    url = f"{MUSICBRAINZ_RELEASE_GROUP}?query={query}&fmt=json"
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -12,3 +14,14 @@ def fetch_musicbrainz_data(query_params):
     except requests.exceptions.RequestException as e:
         return None  
 
+def get_release_group(release_group_id):
+    url = f"{MUSICBRAINZ_RELEASE_GROUP}/{release_group_id}?fmt=json"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return None  
+      
+def get_album_cover_url(release_id):
+    return f"https://coverartarchive.org/release-group/${release_id}/front-250"

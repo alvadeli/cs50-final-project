@@ -1,8 +1,9 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Enter Music Data
+    MusicBrainz Search
 {% endblock %}
+
 
 {% block main %}
 <div class="col-4 mx-auto container">
@@ -13,11 +14,11 @@
     <form action="/search_musicbrainz_data" method="POST">
         <div class="mb-3">
           <label class="form-label">Artist Name</label>
-          <input type="text" class="form-control" name="artist" required value="{{ artist if artist else ""}}">
+          <input type="text" class="form-control" name="artist_search" required value="{{ artist if artist else ""}}">
         </div>
         <div class="mb-3">
           <label class="form-label">Album Title</label>
-          <input type="text" class="form-control" name="album" required value="{{ album if album else ""}}">
+          <input type="text" class="form-control" name="album_search" required value="{{ album if album else ""}}">
         </div>
         <button type="submit" class="btn btn-primary">Search</button>
       </form>
@@ -26,19 +27,27 @@
         <div class="mb-3" >
           <h4> Select Release</Select></h4>
           {% if release_groups %}  
-            <form action="/#" method="POST">
+            <form action="/add_album" method="POST">
               <div class="mb-3">
                 <label class="form-label">Artist Name</label>
                 <input type="text" class="form-control" name="artist" required value="{{ artist }}" readonly>
               </div>
               <div class="mb-3">
                   <label class="form-label">Album</label>
-                  <select class="form-select" name="selected_release_group" required>
+                  <select class="form-select" name="mbrainz_release_group_id" required >
                       <option value="" disabled selected>Choose...</option>
                       {% for release_group in release_groups %}
-                          <option value="{{ release_group.id }}">{{ release_group["title"] }} - {{ release_group["first-release-date"] }}</option>
+                          <option value="{{ release_group.id }}" data-date="{{ release_group["first-release-date"] }}" data-title="{{ release_group["title"] }}">{{ release_group["title"] }} - {{ release_group["first-release-date"] }}</option>
                       {% endfor %}
                   </select>
+              </div>
+              <div class="mb-3" hidden>
+                <label class="form-label">Title</label>
+                <input type="text" class="form-control" name="title" required value="" readonly> 
+              </div>
+              <div class="mb-3" hidden>
+                <label class="form-label">Release Date</label>
+                <input type="text" class="form-control" name="release_date" required value="" readonly> 
               </div>
               <div class="mb-3">
                 <label class="form-label">Rating (1 to 10)</label>
@@ -52,6 +61,25 @@
       </div>
       {% endif %}
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      const selectElement = document.querySelector('select[name="mbrainz_release_group_id"]');
+      const releaseDateInput = document.querySelector('input[name="release_date"]');
+      const albumInput = document.querySelector('input[name="title"]');
+   
+      selectElement.addEventListener('change', function () {
+          const selectedOption = selectElement.options[selectElement.selectedIndex];      
+          const album = selectedOption.getAttribute('data-title');
+          albumInput.value = album
+
+          const releaseDate = selectedOption.getAttribute('data-date');
+          releaseDateInput.value = releaseDate;     
+      });
+  });
+</script>
+
 {% endblock %}
+
 
 

@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Home
+    {{ "Edit" if show_actions else "Home"  }} 
 {% endblock %}
 
 {% block main %}
-    <div class="col-5 mx-auto">
+    <div class="col-6 mx-auto">
         <table class="table table-striped">
             <thead>
               <tr>

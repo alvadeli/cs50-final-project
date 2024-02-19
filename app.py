@@ -37,26 +37,31 @@ def index():
 
     return render_template("index.html", album_data=album_data, show_actions=False)
 
-
-@app.route("/enter_music_data", methods=["POST", "GET"])
+@app.route("/enter_music_data", methods=["GET"])
 def enter_music_data():
-    if request.method == "GET":
-        return render_template("enter_music_data.html")
-    
-    ## POST
+    return render_template("enter_music_data.html")
 
+
+@app.route("/add_album", methods=["POST"])
+def add_album():    
     # Get Data from Form
     artist_name = request.form.get("artist")
-    album_title = request.form.get("album")
+    album_title = request.form.get("title")
     release_date = request.form.get("release_date")
     rating_value = request.form.get("rating")
+    mbrainz_release_group_id = request.form.get("mbrainz_release_group_id")
 
     if not artist_name or not album_title or not release_date:
         return abort(400, "Missing required fields")
     
     album_title = album_title.strip()
     artist_name = artist_name.strip()
-    release_date = datetime.strptime(release_date, "%Y-%m-%d").date()
+    if release_date.count("-") == 2:
+        release_date = datetime.strptime(release_date, "%Y-%m-%d").date()
+    else:
+        release_date = datetime.strptime(release_date, "%Y").date()
+
+    print(release_date)
 
     # add artist
     select_artist = sqla.select(Artist).where(Artist.name == artist_name)
@@ -101,8 +106,8 @@ def search_musicbrainz_data():
     if request.method == "GET":
         return render_template("search_musicbrainz_data.html")
     
-    artist = request.form.get("artist")
-    album = request.form.get("album")
+    artist = request.form.get("artist_search")
+    album = request.form.get("album_search")
 
     if not artist or not album:
         return abort(400, "Missing required fields")
@@ -183,7 +188,7 @@ def edit_music_data():
             db.session.add(new_rating)
     
     db.session.commit()
-    return redirect("/")
+    return redirect("/edit")
 
 
 @app.route("/delete", methods=["POST"])
@@ -205,7 +210,7 @@ def delete():
     db.session.execute(delete_album)
 
     db.session.commit()
-    return redirect("/")
+    return redirect("/edit")
 
 @app.route("/edit", methods=["GET"])
 def edit():
