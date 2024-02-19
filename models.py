@@ -25,7 +25,7 @@ class Rating(db.Model):
 class MusicBrainzReleaseGroup(db.Model):
     id: Mapped[int] = mapped_column(Integer(), primary_key=True)
     cover_url: Mapped[str] = mapped_column(String(255), nullable=True)
-    release_group_id: Mapped[str] = mapped_column(String(100))
+    release_group_id: Mapped[str] = mapped_column(String(100),nullable=False)
     album_id: Mapped[int] = mapped_column(ForeignKey("album.id"), nullable=False, unique=True)
     
 
