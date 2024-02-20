@@ -23,5 +23,15 @@ def get_release_group(release_group_id):
     except requests.exceptions.RequestException as e:
         return None  
       
-def get_album_cover_url(release_id):
-    return f"https://coverartarchive.org/release-group/${release_id}/front-250"
+def get_album_cover_url(release_group_id):
+    url = f"https://coverartarchive.org/release-group/{release_group_id}/front-250"
+    print(url)
+    try:
+        response = requests.head(url)
+        if response.status_code == 400:
+            return None
+        else:
+            return url
+    except requests.exceptions.RequestException as e:
+        print("Error:", e)
+        return None

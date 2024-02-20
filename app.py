@@ -5,8 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 import requests
 import sqlalchemy as sqla
 from datetime import datetime
-from models import Artist, Album, Rating, db
-from musicbrainz_functions import fetch_musicbrainz_data
+from models import Artist, Album, Rating, MusicBrainzReleaseGroup ,db
+from musicbrainz_functions import fetch_musicbrainz_data,get_album_cover_url
 
 # Configure application
 app = Flask(__name__)
@@ -32,7 +32,11 @@ def after_request(response):
 
 @app.route("/", methods=["POST", "GET"])
 def index():
-    select_album_data = sqla.select(Album,Artist,Rating).join(Artist, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+    select_album_data = sqla.select(Album,Artist,Rating,MusicBrainzReleaseGroup)\
+        .join(Artist, Album.artist_id == Artist.id)\
+        .join(Rating, Album.id == Rating.album_id, isouter=True)\
+        .join(MusicBrainzReleaseGroup, MusicBrainzReleaseGroup.id == Album.id, isouter=True)
+    
     album_data = db.session.execute(select_album_data).all()
 
     return render_template("index.html", album_data=album_data, show_actions=False)
@@ -60,8 +64,6 @@ def add_album():
         release_date = datetime.strptime(release_date, "%Y-%m-%d").date()
     else:
         release_date = datetime.strptime(release_date, "%Y").date()
-
-    print(release_date)
 
     # add artist
     select_artist = sqla.select(Artist).where(Artist.name == artist_name)
@@ -97,6 +99,12 @@ def add_album():
             new_rating = Rating(album_id=album.id, rating_value=rating_value)
             db.session.add(new_rating)
         db.session.commit()    
+
+    if mbrainz_release_group_id:
+        cover_url = get_album_cover_url(mbrainz_release_group_id)
+        new_release_group = MusicBrainzReleaseGroup(cover_url=cover_url, release_group_id=mbrainz_release_group_id, album_id=album.id)
+        db.session.add(new_release_group)
+        db.session.commit()
 
     return redirect("/")
     
@@ -136,7 +144,10 @@ def edit_music_data():
         except:
             return abort(400, f"album_id {album_id} could not be processed")    
         
-        select_album_data = sqla.select(Album,Artist,Rating).filter(Album.id == album_id).join(Album, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+        select_album_data = sqla.select(Album,Artist,Rating).filter(Album.id == album_id)\
+            .join(Album, Album.artist_id == Artist.id)\
+            .join(Rating, Album.id == Rating.album_id, isouter=True)
+        
         album_data = db.session.execute(select_album_data).first()
 
         if not album_data:
@@ -165,7 +176,11 @@ def edit_music_data():
     except:
         return abort(400, f"album_id {album_id} could not be processed")    
 
-    select_album_data = sqla.select(Album,Artist,Rating).filter(Album.id == album_id).join(Album, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+    select_album_data = sqla.select(Album,Artist,Rating)\
+        .filter(Album.id == album_id)\
+        .join(Album, Album.artist_id == Artist.id)\
+        .join(Rating, Album.id == Rating.album_id, isouter=True)
+    
     album_data = db.session.execute(select_album_data).first()
 
     if album_data is None:
@@ -206,6 +221,9 @@ def delete():
     delete_rating = sqla.delete(Rating).where(Rating.album_id == album_id)
     db.session.execute(delete_rating)
     
+    delete_release_group = sqla.delete(MusicBrainzReleaseGroup).where(MusicBrainzReleaseGroup.album_id == album_id)
+    db.session.execute(delete_release_group)
+
     delete_album = sqla.delete(Album).where(Album.id == album_id)
     db.session.execute(delete_album)
 
@@ -214,7 +232,10 @@ def delete():
 
 @app.route("/edit", methods=["GET"])
 def edit():
-    select_album_data = sqla.select(Album,Artist,Rating).join(Artist, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+    select_album_data = sqla.select(Album,Artist,Rating,MusicBrainzReleaseGroup)\
+        .join(Artist, Album.artist_id == Artist.id)\
+        .join(Rating, Album.id == Rating.album_id, isouter=True)\
+        .join(MusicBrainzReleaseGroup, MusicBrainzReleaseGroup.id == Album.id, isouter=True)
     album_data = db.session.execute(select_album_data).all()
 
     return render_template("index.html", album_data=album_data, show_actions=True)
@@ -222,7 +243,10 @@ def edit():
 
 @app.route("/img_test", methods=["GET"])
 def img_test():
-    select_album_data = sqla.select(Album,Artist,Rating).join(Artist, Album.artist_id == Artist.id).join(Rating, Album.id == Rating.album_id, isouter=True)
+    select_album_data = sqla.select(Album,Artist,Rating,MusicBrainzReleaseGroup)\
+        .join(Artist, Album.artist_id == Artist.id)\
+        .join(Rating, Album.id == Rating.album_id, isouter=True)\
+        .join(MusicBrainzReleaseGroup, MusicBrainzReleaseGroup.id == Album.id, isouter=True)
     album_data = db.session.execute(select_album_data).all()
 
     return render_template("img_test.html", album_data=album_data, show_actions=False)
