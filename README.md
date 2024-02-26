@@ -16,7 +16,7 @@ I used this option because it is free for non-commercial projects and no special
 You need to build search queries for the data you want. The results are returned in JSON format, which can then be processed on the server.
 
 In order to structure and plan my project, I have created a Gantt chart using Latex.
-The diagram can be found in the directory planning. I started with a research block for the technologies I wanted to use (SQL Alchemy and the MusicBrainsAPI).
+The diagram can be found in the directory planning. I started with a research block for the technologies I wanted to use (SQLAlchemy and the MusicBrains API).
 After that I started to build a prototype. This part mainly consisted of creating the database tables and a simple html table to verify that the data retrieval worked.
 With the prototype I started the implementation phase.
 I used the prototype as a base and added all the features I wanted. 
@@ -52,7 +52,7 @@ The file gets displayed after preesing the edit button of an album.
 The user can update the album data here.
 
 ### search_musicbrainz_data.html
-The user can enter an artist name and album name to search the [MusicBrainz API] (https://musicbrainz.org/doc/MusicBrainz_API).
+The user can enter an artist name and album name to search the MusicBrainz API.
 The user can select an album from the search results and add it to the database. 
 If the selected album has a cover art in the MusicBrainz database, the path will also be added to the database.
 
