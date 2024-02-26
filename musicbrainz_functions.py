@@ -12,6 +12,7 @@ def fetch_musicbrainz_data(query_params):
         response.raise_for_status()
         return response.json()["release-groups"]
     except requests.exceptions.RequestException as e:
+        print("Error:", e)
         return None  
 
 def get_release_group(release_group_id):
@@ -21,11 +22,11 @@ def get_release_group(release_group_id):
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
+        print("Error:", e)
         return None  
       
 def get_album_cover_url(release_group_id):
     url = f"https://coverartarchive.org/release-group/{release_group_id}/front-250"
-    print(url)
     try:
         response = requests.head(url)
         if response.status_code == 400:
