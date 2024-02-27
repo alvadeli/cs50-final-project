@@ -4,6 +4,14 @@
     {{ "Edit" if show_actions else "Home"  }} 
 {% endblock %}
 
+{% block header %}
+    {% if alert_message %}
+        <header>
+            <div class="alert alert-primary mb-0 text-center" role="alert">{{ alert_message }}</div>
+        </header>
+    {% endif %}
+{% endblock %}
+
 {% block main %}
     <div class="col-6 mx-auto">
         <table class="table table-striped">

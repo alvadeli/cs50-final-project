@@ -31,15 +31,16 @@ def after_request(response):
 
 
 @app.route("/", methods=["POST", "GET"])
-def index():
+def index(alert_message=""):
     select_album_data = sqla.select(Album,Artist,Rating,MusicBrainzReleaseGroup)\
         .join(Artist, Album.artist_id == Artist.id)\
         .join(Rating, Album.id == Rating.album_id, isouter=True)\
         .join(MusicBrainzReleaseGroup, MusicBrainzReleaseGroup.id == Album.id, isouter=True)
     
     album_data = db.session.execute(select_album_data).all()
+    #alert_message = session.pop('alert_message', None) 
 
-    return render_template("index.html", album_data=album_data, show_actions=False)
+    return render_template("index.html", album_data=album_data, show_actions=False, alert_message=alert_message)
 
 @app.route("/enter_music_data", methods=["GET"])
 def enter_music_data():
@@ -79,7 +80,8 @@ def add_album():
     album = db.session.scalars(select_album).first()
     
     if album:
-        album.release_date = release_date
+        alert_message = f"{album_title} from {artist_name} already exists!"
+        return index(alert_message)
     else:
         album = Album(title = album_title, release_date = release_date, artist_id = artist.id)
         db.session.add(album)
@@ -106,7 +108,8 @@ def add_album():
         db.session.add(new_release_group)
         db.session.commit()
 
-    return redirect("/")
+    alert_message = f"Added {album_title} from {artist_name}!"
+    return index(alert_message)
     
 
 @app.route("/search_musicbrainz_data", methods=["POST", "GET"])
