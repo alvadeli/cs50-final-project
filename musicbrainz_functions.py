@@ -26,7 +26,7 @@ def get_release_group(release_group_id):
         return None  
       
 def get_album_cover_url(release_group_id):
-    url = f"https://coverartarchive.org/release-group/{release_group_id}/front-250"
+    url = f"https://coverartarchive.org/release-group/{release_group_id}/front-250.jpg"
     try:
         response = requests.head(url)
         if response.status_code == 400:

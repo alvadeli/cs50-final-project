@@ -1,18 +1,20 @@
 import os
 
-from flask import Flask, flash, jsonify, redirect, render_template, request, session, abort
+from flask import Flask, flash, jsonify, redirect, render_template, request, session, abort,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import requests
 import sqlalchemy as sqla
 from datetime import datetime
 from models import Artist, Album, Rating, MusicBrainzReleaseGroup ,db
 from musicbrainz_functions import fetch_musicbrainz_data,get_album_cover_url
+from werkzeug.utils import secure_filename
 
 # Configure application
 app = Flask(__name__)
 
 # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///music.db" 
+app.config['ALBUM_COVER_PATH'] = 'album_covers'
 db.init_app(app)
 
 with app.app_context():    
@@ -41,6 +43,10 @@ def index(alert_message=""):
     #alert_message = session.pop('alert_message', None) 
 
     return render_template("index.html", album_data=album_data, show_actions=False, alert_message=alert_message)
+
+@app.route('/album_covers/<filename>')
+def upload(filename):
+    return send_from_directory(app.config['ALBUM_COVER_PATH'], filename)
 
 @app.route("/enter_music_data", methods=["GET"])
 def enter_music_data():
@@ -104,7 +110,11 @@ def add_album():
 
     if mbrainz_release_group_id:
         cover_url = get_album_cover_url(mbrainz_release_group_id)
-        new_release_group = MusicBrainzReleaseGroup(cover_url=cover_url, release_group_id=mbrainz_release_group_id, album_id=album.id)
+        filename = None
+        if cover_url:
+             filename = f"{mbrainz_release_group_id}.jpg"
+             save_image_from_url(cover_url, filename)
+        new_release_group = MusicBrainzReleaseGroup(cover_url=cover_url, release_group_id=mbrainz_release_group_id, album_id=album.id, cover_filename=filename)
         db.session.add(new_release_group)
         db.session.commit()
 
@@ -224,6 +234,13 @@ def delete():
     delete_rating = sqla.delete(Rating).where(Rating.album_id == album_id)
     db.session.execute(delete_rating)
     
+    get_cover_filepath = sqla.select(MusicBrainzReleaseGroup.cover_filename).where(MusicBrainzReleaseGroup.album_id == album_id)
+    cover_filename = db.session.execute(get_cover_filepath).scalar_one_or_none()
+
+    if cover_filename:
+        album_cover_path = os.path.join(app.config['ALBUM_COVER_PATH'], cover_filename)
+        os.remove(album_cover_path)
+        
     delete_release_group = sqla.delete(MusicBrainzReleaseGroup).where(MusicBrainzReleaseGroup.album_id == album_id)
     db.session.execute(delete_release_group)
 
@@ -253,3 +270,9 @@ def img_test():
     album_data = db.session.execute(select_album_data).all()
 
     return render_template("img_test.html", album_data=album_data, show_actions=False)
+
+def save_image_from_url(url, filename):
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open(os.path.join(app.config['ALBUM_COVER_PATH'], filename), 'wb') as f:
+            f.write(response.content)

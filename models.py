@@ -27,5 +27,6 @@ class MusicBrainzReleaseGroup(db.Model):
     cover_url: Mapped[str] = mapped_column(String(255), nullable=True)
     release_group_id: Mapped[str] = mapped_column(String(100),nullable=False)
     album_id: Mapped[int] = mapped_column(ForeignKey("album.id"), nullable=False, unique=True)
+    cover_filename: Mapped[str] = mapped_column(String(100), nullable=True)
     
 

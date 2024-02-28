@@ -160,6 +160,7 @@ cython_debug/
 #.idea/
 
 /migrations/
+/album_covers/
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
