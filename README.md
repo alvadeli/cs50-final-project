@@ -1,5 +1,5 @@
 # MusicDB
-#### Video Demo:
+#### Video Demo: https://youtu.be/CRixCIqOdT8
 #### Description:
 
 A Flask web application that allows someone to keep track of and rate their favourite music albums.
