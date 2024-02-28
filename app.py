@@ -35,7 +35,7 @@ def index(alert_message=""):
     select_album_data = sqla.select(Album,Artist,Rating,MusicBrainzReleaseGroup)\
         .join(Artist, Album.artist_id == Artist.id)\
         .join(Rating, Album.id == Rating.album_id, isouter=True)\
-        .join(MusicBrainzReleaseGroup, MusicBrainzReleaseGroup.id == Album.id, isouter=True)
+        .join(MusicBrainzReleaseGroup, MusicBrainzReleaseGroup.album_id == Album.id, isouter=True)
     
     album_data = db.session.execute(select_album_data).all()
     #alert_message = session.pop('alert_message', None) 
@@ -238,7 +238,7 @@ def edit():
     select_album_data = sqla.select(Album,Artist,Rating,MusicBrainzReleaseGroup)\
         .join(Artist, Album.artist_id == Artist.id)\
         .join(Rating, Album.id == Rating.album_id, isouter=True)\
-        .join(MusicBrainzReleaseGroup, MusicBrainzReleaseGroup.id == Album.id, isouter=True)
+        .join(MusicBrainzReleaseGroup, MusicBrainzReleaseGroup.album_id == Album.id, isouter=True)
     album_data = db.session.execute(select_album_data).all()
 
     return render_template("index.html", album_data=album_data, show_actions=True)
